@@ -1,6 +1,6 @@
 {
   "name": "exam-atlas",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "description": "A local-first student assessment desktop app, created as a social responsibility project for the Guidance and Counseling Service at Cumhuriyet Secondary School.",
   "main": "src/main.cjs",
   "scripts": {

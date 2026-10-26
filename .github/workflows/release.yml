@@ -24,9 +24,9 @@ jobs:
       - run: npm test
       - run: npm run privacy:check
       - if: runner.os == 'Windows'
-        run: npm run dist:win
+        run: npm run dist:win -- --publish never
       - if: runner.os == 'Linux'
-        run: npm run dist
+        run: npm run dist -- --publish never
       - uses: actions/upload-artifact@v4
         with:
           name: installers-${{ runner.os }}
