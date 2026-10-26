@@ -1,0 +1,70 @@
+{
+  "name": "exam-atlas",
+  "version": "1.4.1",
+  "description": "A local-first student assessment desktop app, created as a social responsibility project for the Guidance and Counseling Service at Cumhuriyet Secondary School.",
+  "main": "src/main.cjs",
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test test/*.test.mjs",
+    "check": "node --check src/main.cjs && node --check src/database.cjs && node --check src/pdf.mjs && node --check renderer/app.js && node --check src/report.cjs && node --check src/report-service.cjs && node --check renderer/report-ui.js && node --check src/validation.cjs && node --check renderer/edit-ui.js && node --check scripts/privacy-check.cjs",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder",
+    "test:ui": "node scripts/public-smoke.cjs",
+    "dist:win": "node scripts/windows-deps.cjs && electron-builder --win nsis --x64",
+    "samples": "node scripts/generate-samples.mjs",
+    "privacy:check": "node scripts/privacy-check.cjs"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "dependencies": {
+    "pdfjs-dist": "6.4.299"
+  },
+  "devDependencies": {
+    "electron": "44.7.0",
+    "electron-builder": "^26.0.12",
+    "playwright": "^1.64.0"
+  },
+  "build": {
+    "appId": "org.examatlas.desktop",
+    "productName": "Sınav Atlası",
+    "files": [
+      "src/**/*",
+      "renderer/**/*",
+      "package.json"
+    ],
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "category": "Education",
+      "icon": "build/icon.png"
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "artifactName": "Sinav-Atlasi-Setup-${version}-${arch}.${ext}",
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "deleteAppDataOnUninstall": false,
+      "installerLanguages": [
+        "tr_TR"
+      ],
+      "language": "1055",
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico"
+    }
+  },
+  "optionalDependencies": {
+    "@napi-rs/canvas-win32-x64-msvc": "1.0.10"
+  },
+  "author": "Exam Atlas contributors",
+  "license": "MIT"
+}
