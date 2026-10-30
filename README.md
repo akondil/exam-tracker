@@ -113,11 +113,21 @@ On Linux, Electron needs a graphical session. For a headless CI worker, run the 
 ```bash
 npm run dist:win   # Windows x64 NSIS setup
 npm run dist       # Host platform; AppImage when run on Linux
+npm run dist:mac -- --arm64 --publish never  # On Apple Silicon macOS
+npm run dist:mac -- --x64 --publish never    # On Intel macOS
 ```
 
 Build artifacts are written to `dist/` and should be uploaded as GitHub Release assets, not committed to source control. The Windows setup uses Turkish prompts. Cross-building Windows on Linux may require Wine and related electron-builder tooling; native Windows CI is preferred.
 
-The workflows in `.github/workflows/` check source changes and build Windows/Linux release assets when a `v*` tag is pushed. Automated releases are created as **drafts** for review. Version tags must match `package.json`, for example `v1.7.0`. Desktop installers are not code-signed by this project; operating-system warnings may appear.
+The workflows in `.github/workflows/` check source changes and build Windows/Linux/macOS release assets when a `v*` tag is pushed. Automated releases are created as **drafts** for review. Version tags must match `package.json`, for example `v1.7.0`. Windows installers are not code-signed. macOS apps use ad-hoc signatures, without an Apple Developer certificate or notarization; Gatekeeper may block them.
+
+### macOS installation
+
+The release workflow is configured to build separate DMGs on native Intel and Apple Silicon runners ([GitHub runner reference](https://docs.github.com/en/actions/reference/runners/github-hosted-runners)). Choose `mac-x64.dmg` for Intel or `mac-arm64.dmg` for Apple Silicon (M-series). Open the DMG and drag **Sınav Atlası** into **Applications**. The interface remains Turkish and the database is created empty on first launch.
+
+Build macOS installers on macOS; a Linux build cannot validate the DMG or application launch. Both Mac jobs run the synthetic-data UI smoke test before packaging. Test the downloaded DMG on its target Mac before publishing the draft release. No successful Mac build or device test is claimed until those checks finish.
+
+The current build uses [electron-builder ad-hoc signing](https://www.electron.build/v26/docs/mac/) with hardened runtime disabled to avoid library-validation conflicts with Electron frameworks. It has no Developer ID signature or Apple notarization. See [Apple's guidance for opening apps from unidentified developers](https://support.apple.com/guide/mac-help/open-a-mac-app-from-an-unknown-developer-mh40616/mac) if macOS blocks a trusted download. Developer ID signing and notarization require a separate certificate and credentials configured as GitHub secrets.
 
 ## Publishing this folder
 

@@ -9,7 +9,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, ubuntu-latest]
+        include:
+          - os: windows-latest
+            arch: x64
+          - os: ubuntu-latest
+            arch: x64
+          - os: macos-15-intel
+            arch: x64
+          - os: macos-15
+            arch: arm64
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -23,16 +31,22 @@ jobs:
       - run: npm run check
       - run: npm test
       - run: npm run privacy:check
+      - name: Test macOS application with synthetic records
+        if: runner.os == 'macOS'
+        run: npm run test:ui
       - if: runner.os == 'Windows'
         run: npm run dist:win -- --publish never
       - if: runner.os == 'Linux'
         run: npm run dist -- --publish never
+      - if: runner.os == 'macOS'
+        run: npm run dist:mac -- --${{ matrix.arch }} --publish never
       - uses: actions/upload-artifact@v4
         with:
-          name: installers-${{ runner.os }}
+          name: installers-${{ runner.os }}-${{ matrix.arch }}
           path: |
             dist/*.exe
             dist/*.AppImage
+            dist/*.dmg
           if-no-files-found: error
   draft:
     needs: build
@@ -50,4 +64,4 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
           RELEASE_TAG: ${{ github.ref_name }}
-        run: gh release create "$RELEASE_TAG" release-assets/* --draft --title "Exam Atlas $RELEASE_TAG" --notes "A social responsibility project for the Guidance and Counseling Service at Cumhuriyet Secondary School. Includes Windows and Linux installers. No student records are bundled. Review and test the installers before publishing."
+        run: gh release create "$RELEASE_TAG" release-assets/* --draft --title "Exam Atlas $RELEASE_TAG" --notes "A social responsibility project for the Guidance and Counseling Service at Cumhuriyet Secondary School. Includes Windows, Linux and macOS (Intel and Apple Silicon) installers. No student records are bundled. Review and test the installers before publishing."

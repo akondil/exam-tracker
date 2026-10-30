@@ -14,7 +14,8 @@
     "samples": "node scripts/generate-samples.mjs",
     "privacy:check": "node scripts/privacy-check.cjs",
     "test:batch-ui": "node scripts/batch-report-smoke.cjs",
-    "test:history-ui": "node scripts/report-history-smoke.cjs"
+    "test:history-ui": "node scripts/report-history-smoke.cjs",
+    "dist:mac": "electron-builder --mac dmg"
   },
   "engines": {
     "node": ">=24"
@@ -62,6 +63,17 @@
       "language": "1055",
       "installerIcon": "build/icon.ico",
       "uninstallerIcon": "build/icon.ico"
+    },
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "category": "public.app-category.education",
+      "icon": "build/icon.png",
+      "artifactName": "Sinav-Atlasi-${version}-mac-${arch}.${ext}",
+      "identity": "-",
+      "hardenedRuntime": false,
+      "notarize": false
     }
   },
   "optionalDependencies": {
