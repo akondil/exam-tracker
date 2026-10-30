@@ -16,6 +16,41 @@ Real PDFs, local databases, screenshots of real records, exported reports, CSV f
 
 Application data stays in a local SQLite database. The application includes no cloud synchronization, analytics or AI service. The database is **not encrypted**; use an appropriately secured device and authorized access. Import actual school records only on an authorized device, never into this repository.
 
+## Select students for batch reports (1.7)
+
+After choosing an exam in **Toplu karne / PDF**, use the student checkboxes to choose exactly whose reports to generate. All matching students are initially selected. **Tümünü seç** selects the full candidate list; **Seçimi temizle** clears the selection.
+
+Search by student name, school number or class. Search only changes the displayed rows; existing selections remain checked even when hidden by the search. The header checkbox selects or deselects the currently visible rows. A live counter shows the selected and available student counts. PDF and print output are disabled when no students are selected.
+
+Only checked students are sent to PDF generation and printing. Question counts, exam-history settings and shared teacher notes are preserved when changing selections. Choosing another exam or reopening the dialog starts a fresh selection for its filtered candidate list.
+
+## Student report presentation (1.6.1)
+
+Single and batch student reports do not display overall, province, district or school rankings. Exam history and progress charts remain available.
+
+## Exam history on student reports (1.6)
+
+Student reports now include an **exam history** table with date, exam title, class, score, total net and per-subject nets. Only results for the same student up to and including the selected exam are shown, in chronological order. The selected exam is highlighted; later results and other students' records are excluded.
+
+A short history fits into the main A4 report. Longer histories, long exam titles or more than six historical subjects use additional numbered A4 sheets. Every available record and subject is retained; absent scores and subjects use a dash. Different subjects such as Social Studies and History are not merged.
+
+History is enabled by default and can be disabled using **Sınav geçmişini karneye ekle** in the single-student report or the equivalent checkbox in batch reports. This option is independent of previous-exam graph comparison. The application remains in Turkish.
+
+Run `npm run test:history-ui` to verify short and long PDFs, changed subjects, individual histories and the option to hide the table using synthetic data only.
+
+## Batch student reports (1.5)
+
+The application remains in Turkish. Open **Öğrenci sonuçları** (Student results), apply the year, school, grade, class or student filters, then choose **Toplu karne / PDF**. Select one exam and review the complete student list: all matching table pages are included.
+
+- **Toplu PDF kaydet** creates one PDF containing the selected students' A4 reports, ordered by class, school number and name. Each student starts on a new page.
+- **Toplu yazdır** opens one system print dialog for the complete batch. You can choose the printer, page range and copies there.
+- Stored school logos and exam question counts are reused. Optional shared teacher notes apply to every report. Automatic summaries and previous-exam comparisons remain student-specific.
+- Unknown question counts remain blank. Counts are validated before output; remembering them checks the entire exam. Missing or mixed-exam selections are rejected.
+- Each batch supports up to 1,000 results. Reports with more than six subjects or long content may require additional pages. Large batches may take time to prepare.
+- Temporary large-report HTML files use a private temporary directory and are removed when report generation finishes. Actual printer hardware is not exercised by automated tests.
+
+Run `npm run test:batch-ui` to check a 36-student synthetic PDF, an 18-student class filter, cancellation and the print-dialog invocation. Generated reports are not included in this public repository.
+
 ## Features
 
 - Import one or several supported school results PDFs after selecting an exam date in **dd/mm/yyyy** format.
@@ -82,7 +117,7 @@ npm run dist       # Host platform; AppImage when run on Linux
 
 Build artifacts are written to `dist/` and should be uploaded as GitHub Release assets, not committed to source control. The Windows setup uses Turkish prompts. Cross-building Windows on Linux may require Wine and related electron-builder tooling; native Windows CI is preferred.
 
-The workflows in `.github/workflows/` check source changes and build Windows/Linux release assets when a `v*` tag is pushed. Automated releases are created as **drafts** for review. Version tags must match `package.json`, for example `v1.4.1`. Desktop installers are not code-signed by this project; operating-system warnings may appear.
+The workflows in `.github/workflows/` check source changes and build Windows/Linux release assets when a `v*` tag is pushed. Automated releases are created as **drafts** for review. Version tags must match `package.json`, for example `v1.7.0`. Desktop installers are not code-signed by this project; operating-system warnings may appear.
 
 ## Publishing this folder
 
@@ -104,8 +139,8 @@ git push -u origin main
 Review the staged files before committing. To prepare release installers after source CI passes:
 
 ```bash
-git tag v1.4.1
-git push origin v1.4.1
+git tag v1.7.0
+git push origin v1.7.0
 ```
 
 Review the generated draft release and publish it when ready. Repository hosting and actual release publication require your own GitHub account and repository; this source folder does not create either automatically.

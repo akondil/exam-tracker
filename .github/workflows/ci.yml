@@ -21,3 +21,9 @@ jobs:
       - run: xvfb-run --auto-servernum npm run test:ui
         env:
           ATLAS_TEST_NO_SANDBOX: '1'
+      - run: xvfb-run --auto-servernum npm run test:batch-ui
+        env:
+          ATLAS_TEST_NO_SANDBOX: '1'
+      - run: xvfb-run --auto-servernum npm run test:history-ui
+        env:
+          ATLAS_TEST_NO_SANDBOX: '1'

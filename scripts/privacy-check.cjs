@@ -3,9 +3,9 @@ const fs=require('node:fs/promises'),path=require('node:path');
 const root=path.resolve(__dirname,'..');
 const allowed=new Set([
  'package.json','package-lock.json','README.md','LICENSE','PRIVACY.md','SECURITY.md','CONTRIBUTING.md','PUBLISHING.md','.gitignore','.gitattributes',
- 'src/main.cjs','src/preload.cjs','src/pdf.mjs','src/database.cjs','src/validation.cjs','src/report.cjs','src/report-service.cjs',
+ 'src/batch-report.cjs','src/main.cjs','src/preload.cjs','src/pdf.mjs','src/database.cjs','src/validation.cjs','src/report.cjs','src/report-service.cjs',
  'renderer/index.html','renderer/app.js','renderer/edit-ui.js','renderer/report-ui.js','renderer/styles.css','renderer/report.css','renderer/assets/icon.png',
- 'build/icon.png','build/icon.ico','scripts/generate-samples.mjs','scripts/windows-deps.cjs','scripts/privacy-check.cjs','scripts/public-smoke.cjs','test/public.test.mjs',
+ 'build/icon.png','build/icon.ico','scripts/generate-samples.mjs','scripts/windows-deps.cjs','scripts/privacy-check.cjs','scripts/public-smoke.cjs','test/batch-report.test.mjs','scripts/batch-report-smoke.cjs','test/report-history.test.mjs','scripts/report-history-smoke.cjs','test/public.test.mjs',
  'samples/demo-grade-6.pdf','samples/demo-grade-8.pdf','samples/demo-worksheet-7.pdf',
  '.github/workflows/ci.yml','.github/workflows/release.yml','.github/ISSUE_TEMPLATE/bug_report.md'
 ]);
