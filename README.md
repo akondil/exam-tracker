@@ -16,6 +16,18 @@ Real PDFs, local databases, screenshots of real records, exported reports, CSV f
 
 Application data stays in a local SQLite database. The application includes no cloud synchronization, analytics or AI service. The database is **not encrypted**; use an appropriately secured device and authorized access. Import actual school records only on an authorized device, never into this repository.
 
+## About the application (1.8.1)
+
+The Turkish **Program hakkında** tab shows the installed application version, project purpose and main capabilities. Project and release buttons open fixed GitHub URLs in the default browser.
+
+## MEBİ / Excel-exported LGS lists (1.8)
+
+Supports combined headers such as **Türkçe Doğru / Yanlış / Boş / Net**, **Toplam Net** and **puan**, including continuation pages without repeated headers. Subject names are normalized; source blanks, negative nets, decimal-comma values, total net and scores are preserved. Total correct/wrong counts are summed from subject results. Malformed cells, mixed reports and unassigned text block import for review.
+
+These lists do not identify the school. In the import preview, use **Sınav bilgilerini düzenle** to enter the institution before saving; city and district may be entered when known. Do not invent participation, rankings, percentiles or source averages: missing source fields remain empty. Duplicate school numbers are flagged for manual correction, without merging students. Existing dashboard statistics and report generation use the imported results.
+
+Public tests use fictional coordinate fixtures only. Real school PDFs and the private integration tests are excluded from this distribution.
+
 ## Select students for batch reports (1.7)
 
 After choosing an exam in **Toplu karne / PDF**, use the student checkboxes to choose exactly whose reports to generate. All matching students are initially selected. **Tümünü seç** selects the full candidate list; **Seçimi temizle** clears the selection.
@@ -119,7 +131,7 @@ npm run dist:mac -- --x64 --publish never    # On Intel macOS
 
 Build artifacts are written to `dist/` and should be uploaded as GitHub Release assets, not committed to source control. The Windows setup uses Turkish prompts. Cross-building Windows on Linux may require Wine and related electron-builder tooling; native Windows CI is preferred.
 
-The workflows in `.github/workflows/` check source changes and build Windows/Linux/macOS release assets when a `v*` tag is pushed. Automated releases are created as **drafts** for review. Version tags must match `package.json`, for example `v1.7.0`. Windows installers are not code-signed. macOS apps use ad-hoc signatures, without an Apple Developer certificate or notarization; Gatekeeper may block them.
+The workflows in `.github/workflows/` check source changes and build Windows/Linux/macOS release assets when a `v*` tag is pushed. Automated releases are created as **drafts** for review. Version tags must match `package.json`, for example `v1.8.2`. Windows installers are not code-signed. macOS apps use ad-hoc signatures, without an Apple Developer certificate or notarization; Gatekeeper may block them.
 
 ### macOS installation
 
@@ -149,8 +161,8 @@ git push -u origin main
 Review the staged files before committing. To prepare release installers after source CI passes:
 
 ```bash
-git tag v1.7.0
-git push origin v1.7.0
+git tag v1.8.2
+git push origin v1.8.2
 ```
 
 Review the generated draft release and publish it when ready. Repository hosting and actual release publication require your own GitHub account and repository; this source folder does not create either automatically.

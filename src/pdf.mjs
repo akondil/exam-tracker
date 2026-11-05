@@ -1,3 +1,4 @@
+import {isMebiDocument,analyzeMebiDocument} from './mebi.mjs';
 import fs from 'node:fs/promises';
 import validation from './validation.cjs';
 import {createHash} from 'node:crypto';
@@ -119,6 +120,7 @@ function average(page,table,label){
  return {lessons,...totals,raw};
 }
 export function analyzeDocument(document){
+ if(isMebiDocument(document))return analyzeMebiDocument(document);
  const result={hash:document.hash,students:[],metadata:{},averages:{},sourceAverages:{},warnings:[],issues:[],analysis:{pages:document.pages.length,detected:0,verified:0,mode:'Kurum sonuç listesi'},schema:null};
  const issue=(page,number,message,source)=>result.issues.push({page,number,message,source});
  let reference=null,rowsCount=0;

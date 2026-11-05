@@ -1,4 +1,4 @@
-const {app,BrowserWindow,ipcMain,dialog}=require('electron');
+const {app,BrowserWindow,ipcMain,dialog,shell}=require('electron');
 const path=require('node:path');
 const fs=require('node:fs/promises');
 const {randomUUID}=require('node:crypto');
@@ -13,6 +13,8 @@ if(!app.commandLine.hasSwitch('user-data-dir'))app.setPath('userData',path.join(
 app.whenReady().then(()=>{
  store=new Store(path.join(app.getPath('userData'),'sinav-atlasi.sqlite'));
  handler('snapshot',()=>store.snapshot());
+ handler('programInfo',()=>({name:'Sınav Atlası',version:app.getVersion(),platform:process.platform,arch:process.arch}));
+ handler('openProject',async target=>{const urls={repository:'https://github.com/akondil/exam-tracker',releases:'https://github.com/akondil/exam-tracker/releases'};if(!Object.hasOwn(urls,target))throw new Error('Geçersiz proje bağlantısı.');await shell.openExternal(urls[target]);return true;});
  const reports=require('./report-service.cjs').createReportService(store,()=>win);
  handler('reportContext',id=>reports.context(id));
  handler('reportPreview',(id,options)=>reports.preview(id,options));
