@@ -54,7 +54,7 @@ export function analyzeMebiDocument(document){
    const noItems=identity.filter(i=>i.x>=table.identity[3].x-2),nameItems=identity.slice(2).filter(i=>!noItems.includes(i));
    const errors=[],lessons=table.names.map(name=>({name,correct:null,wrong:null,blank:null,net:null})),totals={correct:null,wrong:null,net:null,score:null};
    if(!branch||branch[1]!==grade||noItems.length>1)errors.push('Sınıf/şube veya okul numarası hücresi okunamadı.');
-   for(const c of table.columns){const matches=cells.filter(i=>mid(i)>=c.left&&mid(i)<c.right);let value=null;try{if(matches.length!==1)throw new Error('Eksik veya birden fazla sayısal hücre.');value=number(matches[0].text);}catch{errors.push(`${c.subject??'Toplam'} ${c.role}: hücreyi kontrol edin.`);}
+   for(const c of table.columns){const matches=cells.filter(i=>mid(i)>=c.left&&mid(i)<c.right);let value=null;if(!matches.length&&['correct','wrong','net'].includes(c.role))value=0;else{try{if(matches.length!==1)throw new Error('Eksik veya birden fazla sayısal hücre.');value=number(matches[0].text);}catch{errors.push(`${c.subject??'Toplam'} ${c.role}: hücreyi kontrol edin.`);}}
     if(c.subject)lessons.find(l=>l.name===c.subject)[c.role]=value;else totals[c.role==='totalNet'?'net':'score']=value;
    }
    for(const key of ['correct','wrong'])if(lessons.every(l=>l[key]!==null))totals[key]=lessons.reduce((sum,l)=>sum+l[key],0);

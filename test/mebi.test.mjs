@@ -24,8 +24,9 @@ test('Combined headers and headerless pages preserve all metrics and require the
 test('Unknown institution blocks writes; completed metadata persists normalized results and report history',()=>{
  const p=analyzeDocument(document()),db=new Store(':memory:');try{assert.throws(()=>db.import(p,'2026-11-05','demo-mebi.pdf'));assert.equal(db.snapshot().rows.length,0);db.import(complete(p),'2026-11-05','demo-mebi.pdf');const snapshot=db.snapshot();assert.equal(snapshot.rows.length,2);assert.equal(db.db.prepare('SELECT count(*) n FROM subject_results').get().n,12);assert.equal(snapshot.exams[0].metadata.format,'mebi');assert.equal(snapshot.rows[0].lessons[0].blank,17);assert.equal(db.db.prepare('SELECT count(*) n FROM exam_averages').get().n,0);assert.deepEqual(db.db.prepare('PRAGMA foreign_key_check').all(),[]);}finally{db.close();}
 });
-test('Missing numeric cells stay editable, invalid totals and missing row identity block import',()=>{
- for(const mutate of [d=>d.pages[1].items.splice(4,1),d=>{d.pages[1].items.at(-2).text='40';},d=>d.pages[1].items.shift(),d=>{d.pages[1].items[3].text='9001';}]){const d=document();mutate(d);const p=complete(analyzeDocument(d));assert.ok(p.issues.length);const db=new Store(':memory:');try{assert.throws(()=>db.import(p,'2026-11-05','bad.pdf'));assert.equal(db.snapshot().rows.length,0);}finally{db.close();}}
+test('Missing correct/wrong/net become zero; invalid totals, identity and duplicates still block import',()=>{
+ const d0=document();d0.pages[1].items.splice(4,1);const p0=complete(analyzeDocument(d0));assert.deepEqual(p0.issues,[]);assert.equal(p0.students[1].lessons[0].correct,0);
+ for(const mutate of [d=>{d.pages[1].items.at(-2).text='40';},d=>d.pages[1].items.shift(),d=>{d.pages[1].items[3].text='9001';}]){const d=document();mutate(d);const p=complete(analyzeDocument(d));assert.ok(p.issues.length);const db=new Store(':memory:');try{assert.throws(()=>db.import(p,'2026-11-05','bad.pdf'));assert.equal(db.snapshot().rows.length,0);}finally{db.close();}}
 });
 test('Repeated page headers are re-read; mixed exams and missing subjects are rejected',()=>{
  const d=document();d.pages[1].items.forEach(i=>i.y-=25);d.pages[1].items.push(...structuredClone(d.pages[0].items.filter(i=>i.y>=550)));assert.deepEqual(complete(analyzeDocument(d)).issues,[]);

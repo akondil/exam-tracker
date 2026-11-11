@@ -98,11 +98,12 @@ function foyIdentity(page,y,table){
  const [ordinal,cls,number,name,booklet]=values;if(!/^\d+$/.test(ordinal))return null;const c=cls.match(/^(\d+)\s*\/?\s*(.*)$/u);
  return ['',ordinal,c?.[1]??'',c?.[2]??'',number,name,booklet];
 }
-function cellsAt(page,y,columns,errors=null){
+function cellsAt(page,y,columns,errors=null,missingZero=false){
  const cells=row(page.items,y),values=[];
  for(let idx=0;idx<columns.length;idx++){
   const column=columns[idx],left=idx?(columns[idx-1].x+column.x)/2:column.x-(columns[1].x-column.x)/2,right=idx+1<columns.length?(column.x+columns[idx+1].x)/2:column.x+18;
   const matches=cells.filter(i=>center(i)>=left&&center(i)<right);
+  if(!matches.length){values.push(missingZero&&['correct','wrong','net'].includes(column.role)?0:null);continue;}
   try{if(matches.length>1)throw new Error('Aynı sayısal sütunda birden fazla değer bulundu.');values.push(numeric(matches[0]?.text));}catch(error){if(!errors)throw error;errors.push(error.message);values.push(null);}
  }
  return values;
@@ -209,8 +210,9 @@ export function analyzeDocument(document){
    const lessons=table.names.map(name=>({name,correct:null,wrong:null,net:null,blank:null})),totals={correct:null,wrong:null,net:null,score:null};
    let cellErrors=[];
    try{
-    const values=cellsAt(page,anchor.y,table.columns,cellErrors);
+    const values=cellsAt(page,anchor.y,table.columns,cellErrors,true);
     table.columns.forEach((c,i)=>{if(c.subject)lessons.find(l=>l.name===c.subject)[c.role]=values[i];else if(c.role==='score')totals.score=values[i];else totals[c.role.slice(5).toLowerCase()]=values[i];});
+    for(const k of ['correct','wrong','net'])if(totals[k]==null)totals[k]=Math.round(lessons.reduce((s,l)=>s+l[k],0)*100)/100;
    }catch(error){result.warnings.push(`Sayfa ${page.number}, satır ${ordinal}: ${error.message} Sayısal alanları düzenleyin.`);}
    if(cellErrors.length)result.warnings.push(`Sayfa ${page.number}, satır ${ordinal}: ${cellErrors.join(' ')} Okunamayan alanlar boş bırakıldı; düzenleyin.`);
    let ranks,reviewRequired=cellErrors.length>0;try{ranks=ranking(page,anchor.y,table.ranks);}catch(error){result.warnings.push(`Sayfa ${page.number}, satır ${ordinal}: ${error.message} Sıralamaları düzenleyin.`);reviewRequired=true;ranks={rank:[null,null,null,null],percentile:[null,null,null,null]};}
