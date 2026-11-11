@@ -33,7 +33,7 @@ class Store{
  const metadataErrors=validateMetadata(parsed.metadata);if(metadataErrors.length)throw new Error(metadataErrors.join('\n'));validateAverages(parsed.sourceAverages,parsed.students[0].lessons.map(l=>l.name));
  if(this.db.prepare('SELECT id FROM exams WHERE hash=?').get(parsed.hash))throw new Error('Bu PDF daha önce aktarıldı. Aynı dosya ikinci kez eklenemez.');
  this.db.exec('BEGIN IMMEDIATE');try{const m=parsed.metadata;const e=this.db.prepare('INSERT INTO exams(date,title,institution,city,district,source,hash,metadata) VALUES(?,?,?,?,?,?,?,?)').run(date,m.title,m.institution,m.city??'',m.district??'',source,parsed.hash,JSON.stringify({...m,averages:parsed.averages,sourceAverages:parsed.sourceAverages,subjects:parsed.students[0].lessons.map(l=>l.name)}));
- for(const original of parsed.students){const s=studentPatch(original,original),errors=validateStudent(s,m.penalty??3);if(errors.length)throw new Error(errors.join('\n'));const student=this.ensureStudent(s,m.institution);const r=this.db.prepare('INSERT INTO results(exam_id,student_id,classroom,correct,wrong,net,score,lessons,ranks,percentiles,source,booklet) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)').run(e.lastInsertRowid,student.id,s.classroom,s.correct,s.wrong,s.net,s.score??null,JSON.stringify(s.lessons),JSON.stringify(s.rank),JSON.stringify(s.percentile),JSON.stringify(s.source??null),s.booklet??null);this.lessons(e.lastInsertRowid,r.lastInsertRowid,s.lessons);}
+ for(const original of parsed.students){const s=studentPatch(original,original),errors=validateStudent(s,m.penalty??3,m.rankScopes);if(errors.length)throw new Error(errors.join('\n'));const student=this.ensureStudent(s,m.institution);const r=this.db.prepare('INSERT INTO results(exam_id,student_id,classroom,correct,wrong,net,score,lessons,ranks,percentiles,source,booklet) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)').run(e.lastInsertRowid,student.id,s.classroom,s.correct,s.wrong,s.net,s.score??null,JSON.stringify(s.lessons),JSON.stringify(s.rank),JSON.stringify(s.percentile),JSON.stringify(s.source??null),s.booklet??null);this.lessons(e.lastInsertRowid,r.lastInsertRowid,s.lessons);}
  this.averages(e.lastInsertRowid,parsed.sourceAverages);
  this.db.prepare('INSERT INTO imports(exam_id,source,hash,fingerprint,status,report) VALUES(?,?,?,?,?,?)').run(e.lastInsertRowid,source,parsed.hash,null,'imported',JSON.stringify({analysis:parsed.analysis,warnings:parsed.warnings,issues:parsed.issues??[],edits:parsed.edits??[]}));this.db.exec('COMMIT');return Number(e.lastInsertRowid);
  }catch(error){this.db.exec('ROLLBACK');throw error;}}
@@ -43,7 +43,7 @@ class Store{
  audit(entity,id,before,after){this.db.prepare('INSERT INTO manual_edits(entity,entity_id,before_json,after_json) VALUES(?,?,?,?)').run(entity,id,JSON.stringify(before),JSON.stringify(after));}
  updateResult(id,input,{linkExisting=false}={}){
  const snapshot=this.snapshot(),before=snapshot.rows.find(r=>r.id===id);if(!before)throw new Error('Sonuç bulunamadı.');
- const exam=snapshot.exams.find(e=>e.id===before.exam_id),s=studentPatch(before,input),errors=validateStudent(s,exam.metadata.penalty??3);if(errors.length)throw new Error(errors.join('\n'));
+ const exam=snapshot.exams.find(e=>e.id===before.exam_id),s=studentPatch(before,input),errors=validateStudent(s,exam.metadata.penalty??3,exam.metadata.rankScopes);if(errors.length)throw new Error(errors.join('\n'));
  const target=s.number?this.db.prepare('SELECT * FROM students WHERE institution=? AND number=?').get(before.institution,s.number):null;
  if(target&&target.id!==before.student_id&&!linkExisting)throw new Error('Bu numarada kayıtlı bir öğrenci var. Eşleştirme seçeneğini açıkça işaretleyin.');
  if(target&&target.id!==before.student_id&&this.db.prepare('SELECT id FROM results WHERE exam_id=? AND student_id=?').get(before.exam_id,target.id))throw new Error('Bu öğrencinin aynı sınavda zaten sonucu var. Kayıtlar birleştirilmedi.');
@@ -59,7 +59,7 @@ class Store{
  const snapshot=this.snapshot(),before=snapshot.exams.find(e=>e.id===id);if(!before)throw new Error('Sınav bulunamadı.');
  const m=examPatch({...before.metadata,title:before.title,institution:before.institution,city:before.city,district:before.district},input),date=input.date??before.date;assertDate(date);
  const averages=input.sourceAverages??before.metadata.sourceAverages??{};validateAverages(averages,m.subjects);
- const rows=snapshot.rows.filter(r=>r.exam_id===id);for(const r of rows){const errors=validateStudent(r,m.penalty??3);if(errors.length)throw new Error(errors.join('\n'));}
+ const rows=snapshot.rows.filter(r=>r.exam_id===id);for(const r of rows){const errors=validateStudent(r,m.penalty??3,m.rankScopes);if(errors.length)throw new Error(errors.join('\n'));}
  if(m.participation[3]!=null&&m.participation[3]!==rows.length)throw new Error('Kurum katılımı kayıt sayısıyla eşleşmelidir.');
  this.db.exec('BEGIN IMMEDIATE');try{
   if(m.institution!==before.institution)for(const r of rows){const student=this.ensureStudent(r,m.institution);this.db.prepare('UPDATE results SET student_id=? WHERE id=?').run(student.id,r.id);}

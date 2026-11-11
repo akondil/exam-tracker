@@ -35,7 +35,7 @@ export function analyzeMebiDocument(document){
  const result={hash:document.hash,metadata:{},students:[],averages:{},sourceAverages:{},warnings:[],issues:[],schema:null,analysis:{pages:document.pages.length,detected:0,verified:0,mode:'Birleşik başlıklı LGS sonuç listesi'}};
  const issue=(page,message)=>result.issues.push({page,number:'',message});let reference;
  try{reference=tableFor(document.pages[0]);}catch(e){issue(1,e.message);return validation.revalidateParsed(result);}
- result.metadata={title:reference.title,institution:'',city:'',district:'',grade:null,penalty:3,scoreLabel:'LGS',format:'mebi',participation:[null,null,null,null]};
+ result.metadata={title:reference.title,institution:'',city:'',district:'',grade:null,penalty:3,scoreLabel:'LGS',format:'mebi',participation:[null,null,null,null],rankScopes:['Genel','İl','İlçe','Kurum']};
  result.schema={columns:reference.columns,penalty:3};
  for(const page of document.pages){
   let table=reference,hasHeaders=page.items.some(i=>heading(i)?.subject);

@@ -1,5 +1,5 @@
 // Shared by PDF review and SQLite writes: the renderer cannot bypass validation.
-function validateStudent(s,penalty=3){
+function validateStudent(s,penalty=3,rankScopes){
  const errors=[];
  if(s.reviewRequired)errors.push('Okunamayan alanları kontrol edip kaydedin.');
  if(typeof s.name!=='string'||!s.name.trim())errors.push('Öğrenci adı zorunludur.');
@@ -16,7 +16,7 @@ function validateStudent(s,penalty=3){
  }
  for(const field of ['correct','wrong','net']){const sum=s.lessons.reduce((v,l)=>v+l[field],0);if(!Number.isFinite(s[field])||Math.abs(sum-s[field])>(field==='net'?Math.max(.08,s.lessons.length*.012):.01))errors.push(`Toplam ${field} değeri derslerle eşleşmiyor.`);}
  if(s.score!=null&&(!Number.isFinite(s.score)||s.score<0||s.score>500))errors.push('Puan 0–500 arasında olmalıdır.');
- for(const [key,label]of [['rank','Sıralama'],['percentile','Yüzdelik']]){if(!Array.isArray(s[key])||s[key].length!==4){errors.push(`${label} alanları eksik.`);continue;}for(const v of s[key])if(v!=null&&(!Number.isFinite(v)||(key==='rank'?(!Number.isInteger(v)||v<1):(v<0||v>100))))errors.push(`${label} değeri geçersiz.`);}
+ const scopeCount=rankScopes?.length??4;for(const [key,label]of [['rank','Sıralama'],['percentile','Yüzdelik']]){if(!Array.isArray(s[key])||s[key].length!==scopeCount){errors.push(`${label} alanları eksik.`);continue;}for(const v of s[key])if(v!=null&&(!Number.isFinite(v)||(key==='rank'?(!Number.isInteger(v)||v<1):(v<0||v>100))))errors.push(`${label} değeri geçersiz.`);}
  return errors;
 }
 function validateMetadata(m){
@@ -30,7 +30,7 @@ function revalidateParsed(parsed){
  const add=(message,index)=>{const s=parsed.students[index];parsed.issues.push({kind:'validation',index,page:s?.source?.page??1,number:s?.number??'',message});};
  validateMetadata(parsed.metadata).forEach(m=>add(m));
  const seen=new Set();let valid=0;
- parsed.students.forEach((s,index)=>{const errors=validateStudent(s,parsed.metadata.penalty??3);if(parsed.metadata.grade&&s.classroom.split('/')[0]!==parsed.metadata.grade)errors.push('Öğrenci sınıf seviyesi sınav bilgisiyle eşleşmiyor.');if(s.number&&s.number!=='0'){if(seen.has(s.number))errors.push('Öğrenci numarası dosyada yineleniyor.');seen.add(s.number);}errors.forEach(m=>add(m,index));if(!errors.length)valid++;});
+ parsed.students.forEach((s,index)=>{const errors=validateStudent(s,parsed.metadata.penalty??3,parsed.metadata.rankScopes);if(parsed.metadata.grade&&s.classroom.split('/')[0]!==parsed.metadata.grade)errors.push('Öğrenci sınıf seviyesi sınav bilgisiyle eşleşmiyor.');if(s.number&&s.number!=='0'){if(seen.has(s.number))errors.push('Öğrenci numarası dosyada yineleniyor.');seen.add(s.number);}errors.forEach(m=>add(m,index));if(!errors.length)valid++;});
  if(parsed.metadata.participation?.[3]!=null&&parsed.metadata.participation[3]!==parsed.analysis.detected)add('Kurum katılımı ile tespit edilen öğrenci sayısı eşleşmiyor.');
  parsed.analysis.verified=valid;return parsed;
 }
@@ -44,7 +44,7 @@ function studentPatch(base,input){
  result.classroom=result.classroom.replace(/\s/g,'').replace(/^(\d+)([\p{L}]+)$/u,'$1/$2').toLocaleUpperCase('tr-TR');
  const value=v=>{if(v!==null&&(typeof v!=='number'||!Number.isFinite(v)))throw new Error('Geçerli sayısal değer veya boş alan kullanın.');return v;};
  for(const key of ['correct','wrong','net','score'])if(key in input)result[key]=value(input[key]);
- for(const key of ['rank','percentile'])if(key in input){if(!Array.isArray(input[key])||input[key].length!==4)throw new Error('Sıralama alanları eksik.');result[key]=input[key].map(value);}
+ for(const key of ['rank','percentile'])if(key in input){if(!Array.isArray(input[key])||input[key].length!==base[key].length)throw new Error('Sıralama alanları eksik.');result[key]=input[key].map(value);}
  if(input.lessons){if(!Array.isArray(input.lessons)||input.lessons.length!==base.lessons.length)throw new Error('Ders listesi değiştirilemez.');result.lessons=base.lessons.map((l,i)=>{const next={...l};for(const key of ['correct','wrong','net','blank','percent'])if(key in input.lessons[i])next[key]=value(input.lessons[i][key]);return next;});}
  return result;
 }

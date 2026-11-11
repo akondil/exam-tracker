@@ -8,8 +8,6 @@ let store,win;const pending=new Map();
 const page=path.join(__dirname,'../renderer/index.html');
 function handler(name,fn){ipcMain.handle(name,async(event,...args)=>{if(event.sender!==win.webContents||event.senderFrame!==win.webContents.mainFrame)throw new Error('Yetkisiz istek.');try{return {ok:true,data:await fn(...args)};}catch(error){return {ok:false,error:error.message};}});}
 const publicFile=f=>({id:f.id,date:f.date,source:f.source,...f.parsed});
-// Keep the public distribution separate from an existing local installation.
-if(!app.commandLine.hasSwitch('user-data-dir'))app.setPath('userData',path.join(app.getPath('appData'),'sinav-atlasi-public'));
 app.whenReady().then(()=>{
  store=new Store(path.join(app.getPath('userData'),'sinav-atlasi.sqlite'));
  handler('snapshot',()=>store.snapshot());
@@ -44,11 +42,11 @@ app.whenReady().then(()=>{
  handler('threshold',v=>store.setThreshold(v));
  handler('delete',async id=>{const a=await dialog.showMessageBox(win,{type:'warning',buttons:['Vazgeç','Sınavı sil'],defaultId:0,cancelId:0,message:'Bu sınav ve ona ait sonuçlar silinsin mi?',detail:'Bu işlem geri alınamaz.'});if(a.response!==1)return false;store.deleteExam(id);return true;});
  handler('export',async ids=>{
-  if(!Array.isArray(ids)||ids.some(id=>!Number.isInteger(id)))throw new Error('Geçersiz kayıt seçimi.');const selected=new Set(ids),rows=store.snapshot().rows.filter(r=>selected.has(r.id));if(!rows.length)throw new Error('Dışa aktarılacak kayıt yok.');
+  if(!Array.isArray(ids)||ids.some(id=>!Number.isInteger(id)))throw new Error('Geçersiz kayıt seçimi.');const snapshot=store.snapshot(),selected=new Set(ids),rows=snapshot.rows.filter(r=>selected.has(r.id));if(!rows.length)throw new Error('Dışa aktarılacak kayıt yok.');
   const picked=await dialog.showSaveDialog(win,{defaultPath:'sinav-sonuclari.csv',filters:[{name:'CSV',extensions:['csv']}]});if(picked.canceled)return false;
-  const names=[...new Set(rows.flatMap(r=>r.lessons.map(l=>l.name)))];
+  const names=[...new Set(rows.flatMap(r=>r.lessons.map(l=>l.name)))],scopeLabels=snapshot.exams.find(e=>e.id===rows[0].exam_id)?.metadata?.rankScopes??['Genel','İl','İlçe','Kurum'];
   const quote=v=>'"'+String(v??'').replace(/^[=+@-]/,"'$&").replace(/"/g,'""')+'"';
-  const header=['Tarih','Sınav','Kurum','Numara','Öğrenci','Sınıf','Doğru','Yanlış','Net','Puan',...names.flatMap(s=>[s+' D',s+' Y',s+' B',s+' N',s+' %']),...['Genel','İl','İlçe','Kurum'].flatMap(s=>[s+' sıra',s+' %']),'PDF Sayfa','PDF Y'];
+  const header=['Tarih','Sınav','Kurum','Numara','Öğrenci','Sınıf','Doğru','Yanlış','Net','Puan',...names.flatMap(s=>[s+' D',s+' Y',s+' B',s+' N',s+' %']),...scopeLabels.flatMap(s=>[s+' sıra',s+' %']),'PDF Sayfa','PDF Y'];
   const csv=[header,...rows.map(r=>[r.date,r.title,r.institution,r.number,r.name,r.classroom,r.correct,r.wrong,r.net,r.score,...names.flatMap(name=>{const l=r.lessons.find(l=>l.name===name);return[l?.correct,l?.wrong,l?.blank,l?.net,l?.percent];}),...r.rank.flatMap((v,i)=>[v,r.percentile[i]]),r.source?.page,r.source?.y])].map(row=>row.map(quote).join(';')).join('\r\n');await fs.writeFile(picked.filePath,'\uFEFF'+csv);return true;
  });
  handler('exportIssues',async id=>{const item=pending.get(id);if(!item)throw new Error('PDF analizi bulunamadı.');const picked=await dialog.showSaveDialog(win,{defaultPath:'pdf-inceleme-raporu.json',filters:[{name:'JSON',extensions:['json']}]});if(picked.canceled)return false;await fs.writeFile(picked.filePath,JSON.stringify({source:item.source,hash:item.parsed.hash,analysis:item.parsed.analysis,issues:item.parsed.issues,warnings:item.parsed.warnings},null,2));return true;});
