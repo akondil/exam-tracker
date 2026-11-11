@@ -10,11 +10,15 @@ Built with **Electron, Node.js and SQLite**. The application interface, validati
 
 ## Privacy and the public repository
 
-**This repository contains no real student records.** It starts with an empty database. The three PDF files in `samples/` are generated from deterministic, fictional data: students use labels such as `DEMO 01`, the school is `DEMO SCHOOL`, and no real school results are included. The beneficiary credit above identifies the purpose of the project, not a source of sample records.
+**This repository contains no real student records.** It starts with an empty database. The four PDF files in `samples/` are generated from deterministic, fictional data: students use labels such as `DEMO 01`, the school is `DEMO SCHOOL`, and no real school results are included. The beneficiary credit above identifies the purpose of the project, not a source of sample records.
 
 Real PDFs, local databases, screenshots of real records, exported reports, CSV files, credentials, build outputs and dependency directories are excluded from this distribution. Run `npm run privacy:check` before committing or publishing. Ignore rules are an additional safeguard; they do not remove files already committed to Git.
 
 Application data stays in a local SQLite database. The application includes no cloud synchronization, analytics or AI service. The database is **not encrypted**; use an appropriately secured device and authorized access. Import actual school records only on an authorized device, never into this repository.
+
+## 7th grade development-monitoring lists (1.9)
+
+Recognizes the **OKUL NET LİSTESİ** (development-monitoring) layout used by 7th grade lists. This variant uses the **OKUL** institution label, a **Puanı** score header, and five rank scopes — **Sınıf, Okul, İlçe, İl, Genel** — where only the overall (Genel) scope carries a percentile. Subject labels such as **Tarih** are preserved verbatim, while **Din K.ve A.B.** is normalized to **Din Kültürü**. Adjacent numeric cells that a PDF library merges (for example `20,00 10`) are split back into separate values, and chart axis labels at the end of the report are not mistaken for students. Blank subject cells are kept and flagged for manual completion rather than silently dropped.
 
 ## About the application (1.8.1)
 

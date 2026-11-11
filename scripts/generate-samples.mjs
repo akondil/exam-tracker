@@ -255,3 +255,46 @@ function generateWorksheet(){
  console.log('wrote synthetic worksheet sample');
 }
 generateWorksheet();
+// 7. sınıf "Gelişim İzleme" (OKUL NET LİSTESİ): OKUL etiketi, "Puanı" başlığı,
+// Tarih/Din K.ve A.B. dersleri, 5 sıralama kapsamı (Sınıf, Okul, İlçe, İl, Genel).
+function generateDevelopment(){
+ const rng=mulberry32(3),count=15,items=[];
+ const subjects=['TURKCE','Tarih','DIN-K.VE-A.B.','INGILIZCE','MATEMATIK','FEN'];
+ const rankC=[726.2,740.6,761.2,777.6,795];
+ const partX={okul:670,ilce:710,il:750,genel:790};
+ const students=[];
+ for(let i=0;i<count;i++){
+  const lessons=[];
+  for(let s=0;s<6;s++){const c=3+Math.floor(rng()*15),w=Math.floor(rng()*6);lessons.push({correct:c,wrong:w,net:round2(c-w/3)});}
+  const totalCorrect=lessons.reduce((a,l)=>a+l.correct,0),totalWrong=lessons.reduce((a,l)=>a+l.wrong,0),totalNet=round2(lessons.reduce((a,l)=>a+l.net,0));
+  students.push({number:String(1001+i),name:'DEMO '+String(i+1).padStart(2,'0'),classroom:'7/'+'ABCDEFGH'[i%8],lessons,totalCorrect,totalWrong,totalNet,score:round3(480-i*9.5+rng()*5),rank:[1,1+(i%3),1+(i%3),1+(i%3),150+i*11],percentile:[null,null,null,null,round2(0.5+i*0.15)]});
+ }
+ items.push(left('IL',64.1,LABEL_Y),left('ILCE',166.2,LABEL_Y),left('OKUL',338.5,LABEL_Y),left('SINAV-ADI',582.6,LABEL_Y));
+ const partY=LABEL_Y-8.2;
+ items.push(center('OKUL',partX.okul,partY),center('ILCE',partX.ilce,partY),center('IL',partX.il,partY),center('GENEL',partX.genel,partY));
+ items.push(center('DEMO CITY',68.3,VALUE_Y),center('DEMO DISTRICT',174.6,VALUE_Y),center('DEMO SCHOOL',349,VALUE_Y),center('7.SINIF GELISIM IZLEME 1',601.5,VALUE_Y));
+ items.push(center('15',partX.okul,VALUE_Y),center('222',partX.ilce,VALUE_Y),center('222',partX.il,VALUE_Y),center('2428',partX.genel,VALUE_Y));
+ subjects.forEach((n,i)=>items.push(center(n,SUBJECT_CENTERS[i],SUBJECT_Y)));
+ items.push(center('Toplam',639.2,SUBJECT_Y),center('LGS',702.95,SUBJECT_Y));
+ for(let i=0;i<7;i++){const b=i*3;items.push(center('D',CENTERS[b],HEADER_Y),center('Y',CENTERS[b+1],HEADER_Y),center('N',CENTERS[b+2],HEADER_Y));}
+ items.push(center('PUANI',702.95,HEADER_Y));
+ items.push(center('SNF-OKUL',733.4,HEADER_Y),center('Ilce',761.2,HEADER_Y),center('Il',777.6,HEADER_Y),center('Genel',795,HEADER_Y));
+ emitAverages(items,AVG_GENEL_Y,'Genel-Ortalama',averages(students));
+ emitAverages(items,AVG_OKUL_Y,'Okul-Ortalamasi',schoolAverages(averages(students)));
+ students.forEach((s,i)=>{
+  const dataY=FIRST_DATA_Y-i*ROW_DY;
+  items.push(left(String(i+1),17,dataY));
+  items.push(left(s.number+' - '+s.name,26.3,dataY));
+  items.push(left(s.classroom,122.9,dataY));
+  const cells=[];
+  for(const l of s.lessons)cells.push(l.correct,l.wrong,l.net);
+  cells.push(s.totalCorrect,s.totalWrong,s.totalNet,s.score);
+  cells.forEach((v,k)=>items.push(center(String(v),CENTERS[k],dataY)));
+  s.rank.forEach((v,k)=>items.push(center(String(v),rankC[k],dataY)));
+  items.push(center('%'+s.percentile[4],rankC[4],dataY+PCT_DY));
+ });
+ fs.writeFileSync(path.join(outDir,'demo-development-7.pdf'),buildPdf(items));
+ console.log('wrote demo-development-7.pdf');
+}
+generateDevelopment();
+

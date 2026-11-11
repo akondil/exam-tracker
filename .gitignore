@@ -21,6 +21,7 @@ coverage/
 !samples/demo-grade-6.pdf
 !samples/demo-grade-8.pdf
 !samples/demo-worksheet-7.pdf
+!samples/demo-development-7.pdf
 *.jpeg
 *.jpg
 *.zip

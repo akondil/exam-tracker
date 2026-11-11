@@ -6,7 +6,7 @@ const allowed=new Set([
  'src/mebi.mjs','test/mebi.test.mjs','src/batch-report.cjs','src/main.cjs','src/preload.cjs','src/pdf.mjs','src/database.cjs','src/validation.cjs','src/report.cjs','src/report-service.cjs',
  'renderer/index.html','renderer/app.js','renderer/edit-ui.js','renderer/report-ui.js','renderer/styles.css','renderer/report.css','renderer/assets/icon.png',
  'build/icon.png','build/icon.ico','scripts/generate-samples.mjs','scripts/windows-deps.cjs','scripts/privacy-check.cjs','scripts/public-smoke.cjs','test/batch-report.test.mjs','scripts/batch-report-smoke.cjs','test/report-history.test.mjs','scripts/report-history-smoke.cjs','test/public.test.mjs',
- 'samples/demo-grade-6.pdf','samples/demo-grade-8.pdf','samples/demo-worksheet-7.pdf',
+ 'samples/demo-grade-6.pdf','samples/demo-grade-8.pdf','samples/demo-worksheet-7.pdf','samples/demo-development-7.pdf',
  '.github/workflows/ci.yml','.github/workflows/release.yml','.github/ISSUE_TEMPLATE/bug_report.md'
 ]);
 const excluded=new Set(['node_modules','dist','.git','coverage']);
@@ -26,7 +26,7 @@ async function check(){
  }}
  await walk(root);for(const rel of allowed)if(!found.has(rel))errors.push('Required public file missing: '+rel);
  const {parsePdf}=await import('../src/pdf.mjs');
- for(const name of ['demo-grade-6.pdf','demo-grade-8.pdf','demo-worksheet-7.pdf']){
+ for(const name of ['demo-grade-6.pdf','demo-grade-8.pdf','demo-worksheet-7.pdf','demo-development-7.pdf']){
   const p=await parsePdf(path.join(root,'samples',name),{strict:false});
   if(p.metadata.institution!=='DEMO SCHOOL'||!p.students.length||p.students.some(s=>s.name&&!/^DEMO \d{2}$/.test(s.name)))errors.push('Unexpected identity data in sample: '+name);
   if(p.issues.some(i=>!(name==='demo-worksheet-7.pdf'&&i.index===5&&i.message==='Öğrenci adı zorunludur.')))errors.push('Unexpected sample parsing issue: '+name);
