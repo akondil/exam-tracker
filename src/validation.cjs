@@ -35,8 +35,7 @@ function revalidateParsed(parsed){
  parsed.analysis.verified=valid;return parsed;
 }
 function assertDate(date){if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||Number.isNaN(Date.parse(date))||new Date(date).toISOString().slice(0,10)!==date)throw new Error('Geçerli sınav tarihi seçin.');}
-const normalizeSubject=value=>String(value??'').toLocaleLowerCase('tr-TR').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ı/g,'i').replace(/[^a-z0-9]+/g,' ').trim();
-module.exports={validateStudent,validateMetadata,revalidateParsed,assertDate,normalizeSubject};
+module.exports={validateStudent,validateMetadata,revalidateParsed,assertDate};
 function studentPatch(base,input){
  if(!input||typeof input!=='object')throw new Error('Geçersiz düzenleme.');
  const result=structuredClone(base);if('rank'in input&&'percentile'in input)result.reviewRequired=false;
