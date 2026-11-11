@@ -145,32 +145,6 @@ Build macOS installers on macOS; a Linux build cannot validate the DMG or applic
 
 The current build uses [electron-builder ad-hoc signing](https://www.electron.build/v26/docs/mac/) with hardened runtime disabled to avoid library-validation conflicts with Electron frameworks. It has no Developer ID signature or Apple notarization. See [Apple's guidance for opening apps from unidentified developers](https://support.apple.com/guide/mac-help/open-a-mac-app-from-an-unknown-developer-mh40616/mac) if macOS blocks a trusted download. Developer ID signing and notarization require a separate certificate and credentials configured as GitHub secrets.
 
-## Publishing this folder
-
-This folder is a standalone public source distribution. Do **not** upload its parent workspace: that workspace may contain real school data and private outputs.
-
-Create an empty GitHub repository, then run the following **inside this folder**, replacing the repository URL:
-
-```bash
-git init
-git add .
-git diff --cached --stat
-npm run privacy:check
-git commit -m "Initial public release of Exam Atlas"
-git branch -M main
-git remote add origin https://github.com/YOUR-ACCOUNT/exam-atlas.git
-git push -u origin main
-```
-
-Review the staged files before committing. To prepare release installers after source CI passes:
-
-```bash
-git tag v1.8.2
-git push origin v1.8.2
-```
-
-Review the generated draft release and publish it when ready. Repository hosting and actual release publication require your own GitHub account and repository; this source folder does not create either automatically.
-
 ## Contributing and support
 
 See [CONTRIBUTING.md](CONTRIBUTING.md), [PRIVACY.md](PRIVACY.md), [SECURITY.md](SECURITY.md) and [PUBLISHING.md](PUBLISHING.md). Use synthetic data in issues and pull requests. Do not attach student lists, databases, report cards or identifiable screenshots.

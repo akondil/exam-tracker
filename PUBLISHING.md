@@ -3,7 +3,7 @@
 1. Publish this standalone folder, not its parent workspace. No Git history has been copied from the private workspace.
 2. Install dependencies with `npm ci`; run syntax checks, unit tests, UI tests and `npm run privacy:check`.
 3. Review every staged file. Include only source, documentation, generic icons, workflows and the generated demo PDFs. Keep real records, exports, screenshots, databases and credentials out of Git.
-4. Create an empty repository in your own GitHub account. Use the commands in README to commit and push this folder.
+4. Create an empty repository in your own GitHub account, add it as a remote (`git remote add origin <URL>`) and push with `git push -u origin main`.
 5. Enable Actions. For private vulnerability reports, enable the repository feature if desired.
 6. Push a version tag matching package.json. The release workflow builds Windows, Linux and separate Intel/Apple Silicon macOS installers and creates a draft GitHub Release. Check workflow results and test an installer on its target operating system before publishing the draft.
 7. Publish release notes in English. Explain changes, supported PDF formats, privacy behavior and any remaining limitations.
